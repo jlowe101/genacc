@@ -1,0 +1,1158 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GenAccounts Pro — Enterprise Identity & Email Provisioning</title>
+    <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'monospace'],
+                    },
+                    colors: {
+                        brand: {
+                            400: '#818cf8',
+                            500: '#6366f1',
+                            600: '#4f46e5',
+                            700: '#4338ca',
+                            900: '#1e1b4b',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: rgba(15, 23, 42, 0.4); }
+        ::-webkit-scrollbar-thumb { background: rgba(99, 102, 241, 0.35); border-radius: 9999px; }
+        ::-webkit-scrollbar-thumb:hover { background: rgba(99, 102, 241, 0.6); }
+
+        body {
+            background-color: #070b14;
+            background-image:
+                radial-gradient(at 0% 0%, rgba(99, 102, 241, 0.16) 0px, transparent 50%),
+                radial-gradient(at 100% 0%, rgba(168, 85, 247, 0.14) 0px, transparent 50%),
+                radial-gradient(at 50% 100%, rgba(14, 165, 233, 0.10) 0px, transparent 50%);
+            background-attachment: fixed;
+        }
+
+        .glass-card {
+            background: rgba(15, 23, 42, 0.72);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+        }
+
+        .glass-subtle {
+            background: rgba(30, 41, 59, 0.45);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+        }
+
+        @keyframes fadeSlideUp {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .animate-card {
+            animation: fadeSlideUp 0.28s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+    </style>
+</head>
+<body class="text-slate-100 min-h-screen font-sans antialiased selection:bg-indigo-500 selection:text-white">
+
+    <!-- Top Navigation / Status Header -->
+    <header class="border-b border-white/10 bg-slate-950/60 backdrop-blur-md sticky top-0 z-30">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-4">
+            <div class="flex items-center gap-3">
+                <div class="h-10 w-10 rounded-xl bg-gradient-to-br from-indigo-500 via-purple-500 to-sky-500 flex items-center justify-center shadow-lg shadow-indigo-500/25">
+                    <i class="fa-solid fa-shield-halved text-white text-lg"></i>
+                </div>
+                <div>
+                    <div class="flex items-center gap-2">
+                        <span class="font-bold text-lg tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-white via-indigo-200 to-indigo-400">GenAccounts</span>
+                        <span class="text-[11px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded-full bg-indigo-500/15 text-indigo-300 border border-indigo-500/30">Pro v2.0</span>
+                    </div>
+                    <p class="text-xs text-slate-400 hidden sm:block">Client-Side Bulk Identity & Email Credential Provisioning</p>
+                </div>
+            </div>
+
+            <div class="flex items-center gap-2 sm:gap-3">
+                <div id="engine-badge" class="flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium bg-emerald-500/10 text-emerald-300 border border-emerald-500/20">
+                    <span class="h-2 w-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                    <span id="engine-badge-text">Smart Hybrid Engine Ready</span>
+                </div>
+                <button id="toggle-advanced-btn" type="button" class="text-xs font-medium px-3 py-2 rounded-lg bg-slate-800/80 hover:bg-slate-700/80 text-slate-200 border border-white/10 transition-all flex items-center gap-1.5">
+                    <i class="fa-solid fa-sliders text-indigo-400"></i>
+                    <span class="hidden sm:inline">Template & API</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
+
+        <!-- KPI Summary Strip -->
+        <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-6">
+            <div class="glass-card rounded-xl p-4 flex items-center gap-3.5">
+                <div class="h-10 w-10 rounded-lg bg-indigo-500/15 border border-indigo-500/25 flex items-center justify-center text-indigo-400 flex-shrink-0">
+                    <i class="fa-solid fa-users"></i>
+                </div>
+                <div class="min-w-0">
+                    <p class="text-xs text-slate-400 font-medium">Generated Batch</p>
+                    <p id="stat-total" class="text-xl font-bold text-white truncate">0 Accounts</p>
+                </div>
+            </div>
+
+            <div class="glass-card rounded-xl p-4 flex items-center gap-3.5">
+                <div class="h-10 w-10 rounded-lg bg-purple-500/15 border border-purple-500/25 flex items-center justify-center text-purple-400 flex-shrink-0">
+                    <i class="fa-solid fa-globe"></i>
+                </div>
+                <div class="min-w-0">
+                    <p class="text-xs text-slate-400 font-medium">Target Domain</p>
+                    <p id="stat-domain" class="text-sm sm:text-base font-semibold text-white truncate font-mono">@mydomain.com</p>
+                </div>
+            </div>
+
+            <div class="glass-card rounded-xl p-4 flex items-center gap-3.5">
+                <div class="h-10 w-10 rounded-lg bg-sky-500/15 border border-sky-500/25 flex items-center justify-center text-sky-400 flex-shrink-0">
+                    <i class="fa-solid fa-key"></i>
+                </div>
+                <div class="min-w-0">
+                    <p class="text-xs text-slate-400 font-medium">Password Policy</p>
+                    <p id="stat-pass-policy" class="text-sm sm:text-base font-semibold text-white truncate">Fixed Default</p>
+                </div>
+            </div>
+
+            <div class="glass-card rounded-xl p-4 flex items-center gap-3.5">
+                <div class="h-10 w-10 rounded-lg bg-emerald-500/15 border border-emerald-500/25 flex items-center justify-center text-emerald-400 flex-shrink-0">
+                    <i class="fa-solid fa-check-double"></i>
+                </div>
+                <div class="min-w-0">
+                    <p class="text-xs text-slate-400 font-medium">Deduplication</p>
+                    <p id="stat-dedup" class="text-sm sm:text-base font-semibold text-emerald-300 truncate">100% Unique</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Primary Grid -->
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+
+            <!-- Left Column: Configuration Panel -->
+            <section class="glass-card rounded-2xl p-5 sm:p-6 lg:col-span-5 space-y-5">
+                <div class="flex items-center justify-between border-b border-white/10 pb-4">
+                    <div>
+                        <h2 class="text-base font-semibold text-white flex items-center gap-2">
+                            <i class="fa-solid fa-wand-magic-sparkles text-indigo-400"></i>
+                            Provisioning Parameters
+                        </h2>
+                        <p class="text-xs text-slate-400 mt-0.5">Configure domain, naming pattern, and security credentials.</p>
+                    </div>
+                    <button id="reset-defaults-btn" type="button" class="text-xs text-slate-400 hover:text-indigo-300 transition-colors" title="Reset form to defaults">
+                        <i class="fa-solid fa-rotate-left mr-1"></i>Reset
+                    </button>
+                </div>
+
+                <form id="generator-form" class="space-y-4">
+                    <!-- Source Mode Tabs -->
+                    <div>
+                        <label class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-2">Identity Source</label>
+                        <div class="grid grid-cols-3 gap-1.5 p-1 rounded-xl bg-slate-900/90 border border-white/10">
+                            <button type="button" data-source="local" class="source-tab-btn py-2 px-2.5 rounded-lg text-xs font-medium transition-all bg-indigo-600 text-white shadow">
+                                <i class="fa-solid fa-bolt mr-1"></i>Instant Local
+                            </button>
+                            <button type="button" data-source="api" class="source-tab-btn py-2 px-2.5 rounded-lg text-xs font-medium transition-all text-slate-400 hover:text-white">
+                                <i class="fa-solid fa-cloud mr-1"></i>Live API
+                            </button>
+                            <button type="button" data-source="custom" class="source-tab-btn py-2 px-2.5 rounded-lg text-xs font-medium transition-all text-slate-400 hover:text-white">
+                                <i class="fa-solid fa-user-pen mr-1"></i>Custom List
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Custom Names Box (Shown only when Custom List is active) -->
+                    <div id="custom-names-group" class="hidden">
+                        <div class="flex items-center justify-between mb-1">
+                            <label for="custom-names" class="block text-xs font-medium text-slate-300">Paste Full Names (One per line)</label>
+                            <button type="button" id="load-sample-names-btn" class="text-[11px] text-indigo-400 hover:text-indigo-300">Load sample list</button>
+                        </div>
+                        <textarea id="custom-names" rows="4" placeholder="e.g.&#10;Sophia Martinez&#10;Liam O'Connor Jr.&#10;Dr. Marcus Vance"
+                            class="w-full px-3.5 py-2.5 bg-slate-900/80 border border-slate-700/80 rounded-xl text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all font-mono"></textarea>
+                    </div>
+
+                    <!-- Domain & Count Row -->
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                        <div class="sm:col-span-2">
+                            <label for="domain" class="block text-xs font-medium text-slate-300 mb-1.5">Target Domain</label>
+                            <div class="relative">
+                                <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
+                                    <i class="fa-solid fa-at text-slate-500 text-xs"></i>
+                                </div>
+                                <input type="text" id="domain" value="mydomain.com" required placeholder="company.com"
+                                    class="w-full pl-9 pr-3.5 py-2.5 bg-slate-900/80 border border-slate-700/80 rounded-xl text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all font-mono">
+                            </div>
+                        </div>
+
+                        <div id="count-group">
+                            <label for="count" class="block text-xs font-medium text-slate-300 mb-1.5">Quantity (1–100)</label>
+                            <div class="relative">
+                                <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
+                                    <i class="fa-solid fa-hashtag text-slate-500 text-xs"></i>
+                                </div>
+                                <input type="number" id="count" value="5" min="1" max="100" required
+                                    class="w-full pl-9 pr-3 py-2.5 bg-slate-900/80 border border-slate-700/80 rounded-xl text-sm text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all font-mono">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Quick Count Presets -->
+                    <div id="count-presets" class="flex items-center justify-between gap-2 pt-0.5">
+                        <span class="text-[11px] text-slate-400">Quick batch size:</span>
+                        <div class="flex gap-1.5">
+                            <button type="button" data-count="3" class="count-preset-btn px-2.5 py-1 rounded-md text-xs bg-slate-800/80 hover:bg-indigo-600/30 hover:text-indigo-300 border border-white/5 text-slate-300 transition-colors">3</button>
+                            <button type="button" data-count="5" class="count-preset-btn px-2.5 py-1 rounded-md text-xs bg-indigo-600/30 text-indigo-300 border border-indigo-500/30 transition-colors">5</button>
+                            <button type="button" data-count="10" class="count-preset-btn px-2.5 py-1 rounded-md text-xs bg-slate-800/80 hover:bg-indigo-600/30 hover:text-indigo-300 border border-white/5 text-slate-300 transition-colors">10</button>
+                            <button type="button" data-count="25" class="count-preset-btn px-2.5 py-1 rounded-md text-xs bg-slate-800/80 hover:bg-indigo-600/30 hover:text-indigo-300 border border-white/5 text-slate-300 transition-colors">25</button>
+                            <button type="button" data-count="50" class="count-preset-btn px-2.5 py-1 rounded-md text-xs bg-slate-800/80 hover:bg-indigo-600/30 hover:text-indigo-300 border border-white/5 text-slate-300 transition-colors">50</button>
+                        </div>
+                    </div>
+
+                    <!-- Email Format -->
+                    <div>
+                        <label for="email-format" class="block text-xs font-medium text-slate-300 mb-1.5">Email Naming Convention</label>
+                        <div class="relative">
+                            <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
+                                <i class="fa-solid fa-envelope-open-text text-slate-500 text-xs"></i>
+                            </div>
+                            <select id="email-format" class="w-full pl-9 pr-9 py-2.5 bg-slate-900/80 border border-slate-700/80 rounded-xl text-sm text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all appearance-none">
+                                <option value="standard">first.last@domain (Standard)</option>
+                                <option value="initial_last">flast@domain (First Initial + Last)</option>
+                                <option value="first_underscore_last">first_last@domain (Underscore)</option>
+                                <option value="first_initial">first.l@domain (First + Last Initial)</option>
+                                <option value="first_only">first@domain (First Name Only)</option>
+                            </select>
+                            <div class="absolute inset-y-0 right-0 pr-3.5 flex items-center pointer-events-none">
+                                <i class="fa-solid fa-chevron-down text-slate-500 text-xs"></i>
+                            </div>
+                        </div>
+                        <p id="format-preview" class="text-[11px] text-indigo-300/90 font-mono mt-1.5 pl-1">
+                            Preview: alexander.wright@mydomain.com
+                        </p>
+                    </div>
+
+                    <!-- Password Configuration -->
+                    <div class="p-3.5 rounded-xl glass-subtle space-y-3">
+                        <div class="flex items-center justify-between">
+                            <label class="text-xs font-semibold text-slate-200 flex items-center gap-1.5">
+                                <i class="fa-solid fa-lock text-indigo-400"></i>
+                                Credential Password Mode
+                            </label>
+                            <div class="flex items-center gap-1 bg-slate-900/90 p-0.5 rounded-lg border border-white/10">
+                                <button type="button" data-passmode="fixed" class="pass-mode-btn px-2.5 py-1 rounded-md text-[11px] font-medium bg-indigo-600 text-white transition-all">Fixed</button>
+                                <button type="button" data-passmode="random" class="pass-mode-btn px-2.5 py-1 rounded-md text-[11px] font-medium text-slate-400 hover:text-white transition-all">Unique Random</button>
+                            </div>
+                        </div>
+
+                        <div id="fixed-password-box">
+                            <div class="relative">
+                                <input type="text" id="default-password" value="Reichei191919" required
+                                    class="w-full pl-3.5 pr-20 py-2 bg-slate-900/90 border border-slate-700/80 rounded-lg text-xs text-white font-mono focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                                <button type="button" id="roll-fixed-pass-btn" class="absolute inset-y-1 right-1 px-2.5 rounded-md bg-slate-800 hover:bg-slate-700 text-[11px] text-indigo-300 flex items-center gap-1 transition-colors" title="Generate a strong shared password">
+                                    <i class="fa-solid fa-dice"></i> Roll
+                                </button>
+                            </div>
+                        </div>
+
+                        <div id="random-password-box" class="hidden flex items-center justify-between text-xs text-slate-300 pt-1">
+                            <span>Password Length: <strong id="pass-len-label" class="text-indigo-300 font-mono">14</strong> chars</span>
+                            <input type="range" id="pass-length" min="10" max="24" value="14" class="w-36 accent-indigo-500 cursor-pointer">
+                        </div>
+                    </div>
+
+                    <!-- Collapsible Advanced Template & API Drawer -->
+                    <div id="advanced-drawer" class="hidden p-3.5 rounded-xl bg-slate-900/90 border border-indigo-500/30 space-y-3">
+                        <div class="flex items-center justify-between">
+                            <span class="text-xs font-semibold text-indigo-300 uppercase tracking-wider">Export Template & API Settings</span>
+                            <span class="text-[11px] text-slate-400">Used in .TXT / Copy Full</span>
+                        </div>
+
+                        <div>
+                            <label for="mailbox-url" class="block text-[11px] font-medium text-slate-400 mb-1">Mailbox Login URL</label>
+                            <input type="url" id="mailbox-url" value="https://mail.one.com/mail/INBOX/1/2"
+                                class="w-full px-3 py-1.5 bg-slate-950 border border-slate-700 rounded-lg text-xs text-white font-mono focus:outline-none focus:ring-1 focus:ring-indigo-500">
+                        </div>
+
+                        <div>
+                            <label for="onboarding-note" class="block text-[11px] font-medium text-slate-400 mb-1">Onboarding Instructions Note</label>
+                            <input type="text" id="onboarding-note" value="Log in first to the mailbox and secured your chatgpt account by adding 2FA and Password.."
+                                class="w-full px-3 py-1.5 bg-slate-950 border border-slate-700 rounded-lg text-xs text-white focus:outline-none focus:ring-1 focus:ring-indigo-500">
+                        </div>
+
+                        <div>
+                            <label for="api-key-input" class="block text-[11px] font-medium text-slate-400 mb-1">FakeNameGenerator API Key (For Live API Mode)</label>
+                            <input type="password" id="api-key-input" value="fng_live_4v00MgripHx9lkaaeVCKy0d7kGunAo6O"
+                                class="w-full px-3 py-1.5 bg-slate-950 border border-slate-700 rounded-lg text-xs text-slate-300 font-mono focus:outline-none focus:ring-1 focus:ring-indigo-500">
+                            <p class="text-[10px] text-slate-500 mt-1">If Live API is blocked by browser CORS or rate limits, GenAccounts automatically falls back to the built-in identity synthesizer.</p>
+                        </div>
+                    </div>
+
+                    <!-- Submit CTA -->
+                    <button type="submit" id="generate-btn" class="w-full flex items-center justify-center gap-2.5 py-3 px-5 bg-gradient-to-r from-indigo-600 via-indigo-500 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white rounded-xl font-semibold text-sm shadow-lg shadow-indigo-500/25 transition-all transform active:scale-[0.99] disabled:opacity-60 disabled:cursor-not-allowed">
+                        <i class="fa-solid fa-bolt"></i>
+                        <span>Generate Credentials</span>
+                    </button>
+                </form>
+            </section>
+
+            <!-- Right Column: Results & Export Workspace -->
+            <section class="glass-card rounded-2xl p-5 sm:p-6 lg:col-span-7 flex flex-col min-h-[540px] lg:min-h-[640px]">
+
+                <!-- Workspace Header & Action Toolbar -->
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-white/10">
+                    <div class="flex items-center gap-2.5">
+                        <h2 class="text-base font-semibold text-white flex items-center gap-2">
+                            <i class="fa-solid fa-server text-indigo-400"></i>
+                            Provisioned Credentials
+                        </h2>
+                        <span id="results-badge" class="px-2.5 py-0.5 text-xs font-mono font-semibold rounded-full bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">0</span>
+                    </div>
+
+                    <!-- Bulk Actions -->
+                    <div id="bulk-toolbar" class="flex flex-wrap items-center gap-2 hidden">
+                        <!-- View Toggle -->
+                        <div class="flex items-center bg-slate-900/90 p-0.5 rounded-lg border border-white/10 mr-1">
+                            <button type="button" id="view-cards-btn" class="px-2.5 py-1 rounded-md text-xs font-medium bg-indigo-600 text-white transition-all" title="Card View">
+                                <i class="fa-solid fa-grip"></i>
+                            </button>
+                            <button type="button" id="view-table-btn" class="px-2.5 py-1 rounded-md text-xs font-medium text-slate-400 hover:text-white transition-all" title="Compact Table View">
+                                <i class="fa-solid fa-table-list"></i>
+                            </button>
+                        </div>
+
+                        <button type="button" id="copy-all-btn" class="text-xs bg-slate-800 hover:bg-slate-700 text-slate-200 py-1.5 px-3 rounded-lg transition-colors border border-white/10 flex items-center gap-1.5">
+                            <i class="fa-regular fa-copy text-indigo-400"></i>
+                            <span>Copy All</span>
+                        </button>
+
+                        <button type="button" id="download-txt-btn" class="text-xs bg-indigo-600/20 hover:bg-indigo-600/30 text-indigo-200 py-1.5 px-3 rounded-lg transition-colors border border-indigo-500/30 flex items-center gap-1.5">
+                            <i class="fa-solid fa-file-lines text-indigo-400"></i>
+                            <span>.TXT</span>
+                        </button>
+
+                        <button type="button" id="download-csv-btn" class="text-xs bg-emerald-600/20 hover:bg-emerald-600/30 text-emerald-200 py-1.5 px-3 rounded-lg transition-colors border border-emerald-500/30 flex items-center gap-1.5">
+                            <i class="fa-solid fa-file-csv text-emerald-400"></i>
+                            <span>.CSV</span>
+                        </button>
+
+                        <button type="button" id="clear-all-btn" class="text-xs bg-rose-500/10 hover:bg-rose-500/20 text-rose-300 py-1.5 px-2.5 rounded-lg transition-colors border border-rose-500/20" title="Clear list">
+                            <i class="fa-solid fa-trash-can"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Filter & Search Sub-bar -->
+                <div id="filter-bar" class="hidden pt-3 pb-2 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2">
+                    <div class="relative flex-grow">
+                        <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 text-xs"></i>
+                        <input type="text" id="search-input" placeholder="Filter by name, username, or email..."
+                            class="w-full pl-8 pr-8 py-1.5 bg-slate-900/70 border border-slate-700/70 rounded-lg text-xs text-white placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-indigo-500">
+                    </div>
+                    <div class="flex items-center gap-2 justify-end">
+                        <button type="button" id="copy-emails-only-btn" class="text-[11px] text-slate-300 hover:text-white bg-slate-800/60 hover:bg-slate-800 px-2.5 py-1.5 rounded-lg border border-white/5 transition-colors">
+                            <i class="fa-solid fa-at text-indigo-400 mr-1"></i>Copy Emails Only
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Loader State -->
+                <div id="loader" class="hidden flex-col items-center justify-center flex-grow py-16">
+                    <div class="relative h-14 w-14 mb-4">
+                        <div class="absolute inset-0 rounded-full border-2 border-indigo-500/20"></div>
+                        <div class="absolute inset-0 rounded-full border-2 border-indigo-500 border-t-transparent animate-spin"></div>
+                        <div class="absolute inset-0 flex items-center justify-center text-indigo-400">
+                            <i class="fa-solid fa-user-shield"></i>
+                        </div>
+                    </div>
+                    <p class="text-slate-200 text-sm font-medium">Synthesizing unique credentials...</p>
+                    <p class="text-slate-500 text-xs mt-1">Sanitizing names & applying collision protection</p>
+                </div>
+
+                <!-- Empty State -->
+                <div id="empty-state" class="hidden flex-col items-center justify-center flex-grow py-16 text-center">
+                    <div class="h-16 w-16 rounded-2xl bg-slate-800/70 border border-white/10 flex items-center justify-center text-slate-500 text-2xl mb-4">
+                        <i class="fa-solid fa-envelopes-bulk"></i>
+                    </div>
+                    <h3 class="text-sm font-semibold text-slate-300">No Credentials in Workspace</h3>
+                    <p class="text-xs text-slate-500 max-w-xs mt-1">Configure your target domain and naming convention on the left, then click <span class="text-indigo-400 font-medium">Generate Credentials</span>.</p>
+                </div>
+
+                <!-- Results List (Cards View) -->
+                <div id="results-container" class="flex-grow overflow-y-auto space-y-2.5 mt-3 pr-1 max-h-[520px]">
+                    <!-- Populated via JS -->
+                </div>
+
+                <!-- Results Table (Compact Table View) -->
+                <div id="table-container" class="hidden flex-grow overflow-x-auto overflow-y-auto mt-3 max-h-[520px] rounded-xl border border-white/10">
+                    <table class="w-full text-left border-collapse">
+                        <thead class="bg-slate-900/90 text-[11px] uppercase tracking-wider text-slate-400 sticky top-0">
+                            <tr>
+                                <th class="py-2.5 px-3 font-semibold">#</th>
+                                <th class="py-2.5 px-3 font-semibold">Full Name</th>
+                                <th class="py-2.5 px-3 font-semibold">Email Address</th>
+                                <th class="py-2.5 px-3 font-semibold">Password</th>
+                                <th class="py-2.5 px-3 font-semibold text-right">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="table-body" class="divide-y divide-white/5 text-xs">
+                            <!-- Populated via JS -->
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Footer Format Preview Bar -->
+                <div id="export-preview-bar" class="mt-4 pt-3 border-t border-white/10 flex items-center justify-between gap-2 text-[11px] text-slate-400">
+                    <div class="truncate font-mono" id="export-format-sample">
+                        Format: Email: user@mydomain.com | Pass: Reichei191919 | Mailbox: https://mail.one.com/mail/INBOX/1/2
+                    </div>
+                    <span class="flex-shrink-0 text-emerald-400 flex items-center gap-1">
+                        <i class="fa-solid fa-circle-check"></i> Ready
+                    </span>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <!-- Toast Notification Stack -->
+    <div id="toast-container" class="fixed bottom-5 right-5 z-50 flex flex-col gap-2 max-w-sm w-full pointer-events-none px-4 sm:px-0"></div>
+
+    <script>
+        // Curated Realistic First & Last Name Pool for Instant Local Synthesis & API Fallback
+        const FIRST_NAMES = [
+            "Alexander", "Sophia", "Benjamin", "Olivia", "Sebastian", "Emma", "Nathaniel", "Ava",
+            "Gabriel", "Isabella", "Julian", "Mia", "Dominic", "Charlotte", "Adrian", "Amelia",
+            "Christian", "Harper", "Jonathan", "Evelyn", "leonardo", "Abigail", "Vincent", "Emily",
+            "Marcus", "Elizabeth", "Xavier", "Sofia", "Damian", "Avery", "Zachary", "Ella",
+            "Mateo", "Scarlett", "Lucas", "Grace", "Henry", "Chloe", "Theodore", "Victoria",
+            "Daniel", "Riley", "Matthew", "Aria", "Samuel", "Lily", "David", "Aubrey",
+            "Joseph", "Zoey", "Carter", "Penelope", "Owen", "Lillian", "Wyatt", "Addison",
+            "John", "Layla", "Jack", "Natalie", "Luke", "Camila", "Jayden", "Hannah",
+            "Dylan", "Brooklyn", "Grayson", "Zoe", "Levi", "Nora", "Isaac", "Leah",
+            "Elena", "Clara", "Valeria", "Nadia", "Malcolm", "Devon", "Kieran", "prestons"
+        ].map(n => n.charAt(0).toUpperCase() + n.slice(1).toLowerCase());
+
+        const LAST_NAMES = [
+            "Wright", "Martinez", "Anderson", "Taylor", "Thomas", "Hernandez", "Moore", "Martin",
+            "Jackson", "Thompson", "White", "Lopez", "Lee", "Gonzalez", "Harris", "Clark",
+            "Lewis", "Robinson", "Walker", "Perez", "Hall", "Young", "Allen", "Sanchez",
+            "King", "Scott", "Green", "Baker", "Adams", "Nelson", "Hill", "Ramirez",
+            "Campbell", "Mitchell", "Roberts", "Carter", "Phillips", "Evans", "Turner", "Torres",
+            "Parker", "Collins", "Edwards", "Stewart", "Flores", "Morris", "Nguyen", "Murphy",
+            "Rivera", "Cook", "Rogers", "Morgan", "Peterson", "Cooper", "Reed", "Bailey",
+            "Vance", "Sterling", "Kensington", "Holloway", "Blackwood", "Mercer", "Callahan", "Sinclair"
+        ];
+
+        // Application State
+        let state = {
+            sourceMode: 'local',      // 'local' | 'api' | 'custom'
+            passwordMode: 'fixed',    // 'fixed' | 'random'
+            viewMode: 'cards',        // 'cards' | 'table'
+            accounts: [],
+            searchQuery: ''
+        };
+
+        // DOM Elements
+        const form = document.getElementById('generator-form');
+        const domainInput = document.getElementById('domain');
+        const countInput = document.getElementById('count');
+        const countGroup = document.getElementById('count-group');
+        const countPresets = document.getElementById('count-presets');
+        const emailFormatInput = document.getElementById('email-format');
+        const formatPreview = document.getElementById('format-preview');
+        const defaultPasswordInput = document.getElementById('default-password');
+        const passLengthInput = document.getElementById('pass-length');
+        const passLenLabel = document.getElementById('pass-len-label');
+        const fixedPasswordBox = document.getElementById('fixed-password-box');
+        const randomPasswordBox = document.getElementById('random-password-box');
+        const customNamesGroup = document.getElementById('custom-names-group');
+        const customNamesInput = document.getElementById('custom-names');
+        const mailboxUrlInput = document.getElementById('mailbox-url');
+        const onboardingNoteInput = document.getElementById('onboarding-note');
+        const apiKeyInput = document.getElementById('api-key-input');
+        const advancedDrawer = document.getElementById('advanced-drawer');
+        const generateBtn = document.getElementById('generate-btn');
+
+        const resultsContainer = document.getElementById('results-container');
+        const tableContainer = document.getElementById('table-container');
+        const tableBody = document.getElementById('table-body');
+        const loader = document.getElementById('loader');
+        const emptyState = document.getElementById('empty-state');
+        const bulkToolbar = document.getElementById('bulk-toolbar');
+        const filterBar = document.getElementById('filter-bar');
+        const searchInput = document.getElementById('search-input');
+        const resultsBadge = document.getElementById('results-badge');
+        const exportFormatSample = document.getElementById('export-format-sample');
+
+        // KPI Elements
+        const statTotal = document.getElementById('stat-total');
+        const statDomain = document.getElementById('stat-domain');
+        const statPassPolicy = document.getElementById('stat-pass-policy');
+        const engineBadgeText = document.getElementById('engine-badge-text');
+
+        // HTML Escaping Helper (Prevents XSS)
+        function escapeHtml(str) {
+            return String(str)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#039;');
+        }
+
+        // Clean Domain Helper
+        function sanitizeDomain(rawDomain) {
+            let cleaned = rawDomain.trim().toLowerCase();
+            cleaned = cleaned.replace(/^(https?:\/\/)?(www\.)?/, '');
+            cleaned = cleaned.replace(/^@+/, '');
+            cleaned = cleaned.split('/')[0];
+            return cleaned || 'mydomain.com';
+        }
+
+        // Generate Strong Password
+        function generateRandomPassword(length = 14) {
+            const upper = 'ABCDEFGHJKLMNPQRSTUVWXYZ';
+            const lower = 'abcdefghijkmnopqrstuvwxyz';
+            const digits = '23456789';
+            const symbols = '!@#$%&*';
+            const all = upper + lower + digits + symbols;
+
+            let pass = [
+                upper[Math.floor(Math.random() * upper.length)],
+                lower[Math.floor(Math.random() * lower.length)],
+                digits[Math.floor(Math.random() * digits.length)],
+                symbols[Math.floor(Math.random() * symbols.length)]
+            ];
+
+            for (let i = pass.length; i < length; i++) {
+                pass.push(all[Math.floor(Math.random() * all.length)]);
+            }
+            return pass.sort(() => Math.random() - 0.5).join('');
+        }
+
+        // Toast Notification
+        function showToast(message, type = 'success') {
+            const toastContainer = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            const styles = {
+                success: 'bg-slate-900/95 border-emerald-500/40 text-emerald-300',
+                error: 'bg-slate-900/95 border-rose-500/40 text-rose-300',
+                info: 'bg-slate-900/95 border-indigo-500/40 text-indigo-300'
+            };
+            const icons = {
+                success: 'fa-circle-check text-emerald-400',
+                error: 'fa-triangle-exclamation text-rose-400',
+                info: 'fa-circle-info text-indigo-400'
+            };
+
+            toast.className = `pointer-events-auto flex items-center gap-3 px-4 py-3 rounded-xl border shadow-2xl backdrop-blur-md transform transition-all duration-300 translate-y-4 opacity-0 ${styles[type] || styles.info}`;
+            toast.innerHTML = `
+                <i class="fa-solid ${icons[type] || icons.info} text-base flex-shrink-0"></i>
+                <span class="text-xs font-medium text-slate-100 flex-grow">${escapeHtml(message)}</span>
+            `;
+
+            toastContainer.appendChild(toast);
+            requestAnimationFrame(() => {
+                toast.classList.remove('translate-y-4', 'opacity-0');
+            });
+
+            setTimeout(() => {
+                toast.classList.add('opacity-0', 'translate-y-2');
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
+        }
+
+        // Name Parser & Email Builder with Prefix Calculation
+        function buildPrefix(firstNameClean, lastNameClean, emailFormat) {
+            const f = firstNameClean.toLowerCase();
+            const l = lastNameClean.toLowerCase();
+            switch (emailFormat) {
+                case 'initial_last':
+                    return `${f.charAt(0)}${l}`;
+                case 'first_underscore_last':
+                    return `${f}_${l}`;
+                case 'first_initial':
+                    return `${f}.${l.charAt(0)}`;
+                case 'first_only':
+                    return f;
+                case 'standard':
+                default:
+                    return `${f}.${l}`;
+            }
+        }
+
+        // Smart Name Extraction (Handles titles like Dr./Mr. and suffixes like Jr./III)
+        function parseFullName(rawName) {
+            const cleaned = rawName.trim().replace(/\s+/g, ' ');
+            const titles = new Set(['mr', 'mrs', 'ms', 'miss', 'dr', 'prof', 'sir']);
+            const suffixes = new Set(['jr', 'sr', 'ii', 'iii', 'iv', 'v', 'md', 'phd', 'esq']);
+
+            const tokens = cleaned.split(' ').filter(Boolean);
+            const filtered = tokens.filter((t, idx) => {
+                const norm = t.replace(/[^a-zA-Z]/g, '').toLowerCase();
+                if (idx === 0 && titles.has(norm)) return false;
+                if (idx === tokens.length - 1 && suffixes.has(norm)) return false;
+                return true;
+            });
+
+            const effective = filtered.length >= 2 ? filtered : tokens;
+            const firstRaw = effective[0] || 'User';
+            const lastRaw = effective.length > 1 ? effective[effective.length - 1] : 'Account';
+
+            const firstNameClean = firstRaw.replace(/[^a-zA-Z]/g, '') || 'user';
+            const lastNameClean = lastRaw.replace(/[^a-zA-Z]/g, '') || 'account';
+
+            return {
+                fullName: cleaned,
+                firstNameClean,
+                lastNameClean
+            };
+        }
+
+        // Process a batch of names with automatic collision resolution
+        function processBatchIdentities(rawNames, targetDomain, emailFormat) {
+            const usedUsernames = new Set();
+            const fixedPass = defaultPasswordInput.value.trim() || 'Reichei191919';
+            const randLen = parseInt(passLengthInput.value, 10) || 14;
+
+            return rawNames.map((rawName, idx) => {
+                const { fullName, firstNameClean, lastNameClean } = parseFullName(rawName);
+                let basePrefix = buildPrefix(firstNameClean, lastNameClean, emailFormat);
+                let finalUsername = basePrefix;
+                let counter = 2;
+
+                while (usedUsernames.has(finalUsername)) {
+                    finalUsername = `${basePrefix}${counter}`;
+                    counter++;
+                }
+                usedUsernames.add(finalUsername);
+
+                const password = state.passwordMode === 'random'
+                    ? generateRandomPassword(randLen)
+                    : fixedPass;
+
+                return {
+                    id: `acc_${Date.now()}_${idx}`,
+                    fullName,
+                    username: finalUsername,
+                    email: `${finalUsername}@${targetDomain}`,
+                    password
+                };
+            });
+        }
+
+        // Local Name Generator
+        function generateLocalNames(count) {
+            const names = [];
+            const usedFullNames = new Set();
+            for (let i = 0; i < count; i++) {
+                let candidate = '';
+                let attempts = 0;
+                do {
+                    const f = FIRST_NAMES[Math.floor(Math.random() * FIRST_NAMES.length)];
+                    const l = LAST_NAMES[Math.floor(Math.random() * LAST_NAMES.length)];
+                    candidate = `${f} ${l}`;
+                    attempts++;
+                } while (usedFullNames.has(candidate) && attempts < 50);
+                usedFullNames.add(candidate);
+                names.push(candidate);
+            }
+            return names;
+        }
+
+        // Fetch from Live API with automatic graceful fallback
+        async function getRawNames(count) {
+            if (state.sourceMode === 'custom') {
+                const lines = customNamesInput.value
+                    .split(/\r?\n/)
+                    .map(s => s.trim())
+                    .filter(Boolean);
+                if (lines.length === 0) {
+                    showToast('Please enter at least one name in Custom List mode.', 'error');
+                    return null;
+                }
+                return lines;
+            }
+
+            if (state.sourceMode === 'local') {
+                return generateLocalNames(count);
+            }
+
+            // Live API Mode
+            const apiKey = apiKeyInput.value.trim();
+            try {
+                const response = await fetch(`https://www.fakenamegenerator.com/api/v1/identities?count=${count}&country=us`, {
+                    headers: {
+                        'Authorization': `Bearer ${apiKey}`,
+                        'Accept': 'application/json'
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error(`API HTTP ${response.status}`);
+                }
+
+                const json = await response.json();
+                if (json && Array.isArray(json.data) && json.data.length > 0) {
+                    engineBadgeText.textContent = 'Live API Connected';
+                    return json.data.map(person => person.name.full);
+                }
+                throw new Error('Unexpected API payload');
+            } catch (err) {
+                engineBadgeText.textContent = 'Fallback Local Synthesizer';
+                showToast('Live API unreachable (CORS/Key limit) — synthesized locally instead.', 'info');
+                return generateLocalNames(count);
+            }
+        }
+
+        // Format Single Account Line for Export / Full Copy
+        function formatExportLine(account) {
+            const mailbox = mailboxUrlInput.value.trim() || 'https://mail.one.com/mail/INBOX/1/2';
+            const note = onboardingNoteInput.value.trim() || 'Log in first to the mailbox and secured your chatgpt account by adding 2FA and Password..';
+            return `Email: ${account.email}  | Pass: ${account.password} | Mailbox: ${mailbox} | ${note}`;
+        }
+
+        // Update Live Previews & KPI Header
+        function updateLivePreviews() {
+            const domain = sanitizeDomain(domainInput.value);
+            const fmt = emailFormatInput.value;
+            const samplePrefix = buildPrefix('alexander', 'wright', fmt);
+
+            formatPreview.textContent = `Preview: ${samplePrefix}@${domain}`;
+            statDomain.textContent = `@${domain}`;
+            statTotal.textContent = `${state.accounts.length} Account${state.accounts.length === 1 ? '' : 's'}`;
+            statPassPolicy.textContent = state.passwordMode === 'random'
+                ? `Random (${passLengthInput.value} chars)`
+                : 'Fixed Default';
+
+            const samplePass = state.passwordMode === 'random' ? '••••••••••••' : (defaultPasswordInput.value.trim() || 'Reichei191919');
+            const mailbox = mailboxUrlInput.value.trim() || 'https://mail.one.com/mail/INBOX/1/2';
+            exportFormatSample.textContent = `Format: Email: ${samplePrefix}@${domain} | Pass: ${samplePass} | Mailbox: ${mailbox}`;
+        }
+
+        // Render Accounts into Active View
+        function renderWorkspace() {
+            const query = state.searchQuery.toLowerCase().trim();
+            const filtered = state.accounts.filter(acc =>
+                acc.fullName.toLowerCase().includes(query) ||
+                acc.username.toLowerCase().includes(query) ||
+                acc.email.toLowerCase().includes(query)
+            );
+
+            resultsBadge.textContent = String(state.accounts.length);
+            updateLivePreviews();
+
+            if (state.accounts.length === 0) {
+                emptyState.classList.remove('hidden');
+                emptyState.classList.add('flex');
+                resultsContainer.classList.add('hidden');
+                tableContainer.classList.add('hidden');
+                bulkToolbar.classList.add('hidden');
+                filterBar.classList.add('hidden');
+                return;
+            }
+
+            emptyState.classList.add('hidden');
+            emptyState.classList.remove('flex');
+            bulkToolbar.classList.remove('hidden');
+            filterBar.classList.remove('hidden');
+
+            // Render Cards
+            resultsContainer.innerHTML = '';
+            tableBody.innerHTML = '';
+
+            if (filtered.length === 0) {
+                resultsContainer.innerHTML = `
+                    <div class="text-center py-12 text-slate-400 text-xs">
+                        No matching credentials found for "${escapeHtml(state.searchQuery)}".
+                    </div>
+                `;
+            }
+
+            filtered.forEach((account, index) => {
+                const initials = account.fullName
+                    .split(' ')
+                    .filter(Boolean)
+                    .slice(0, 2)
+                    .map(p => p.charAt(0).toUpperCase())
+                    .join('');
+
+                // Card Item
+                const card = document.createElement('div');
+                card.className = 'glass-subtle hover:bg-slate-800/75 rounded-xl p-3.5 transition-all animate-card flex flex-col sm:flex-row sm:items-center justify-between gap-3 group';
+                card.style.animationDelay = `${Math.min(index * 0.03, 0.3)}s`;
+
+                card.innerHTML = `
+                    <div class="flex items-start sm:items-center gap-3.5 min-w-0">
+                        <div class="h-10 w-10 rounded-xl bg-gradient-to-br from-indigo-500/30 to-purple-500/30 border border-indigo-400/30 flex items-center justify-center text-indigo-200 font-bold text-xs flex-shrink-0">
+                            ${escapeHtml(initials)}
+                        </div>
+                        <div class="min-w-0 flex-grow">
+                            <div class="flex items-center gap-2">
+                                <p class="font-semibold text-sm text-white truncate">${escapeHtml(account.fullName)}</p>
+                                <span class="text-[11px] font-mono px-2 py-0.5 rounded bg-slate-900/90 text-slate-400 border border-white/5 truncate">${escapeHtml(account.username)}</span>
+                            </div>
+                            <div class="flex flex-wrap items-center gap-x-4 gap-y-1 mt-1">
+                                <span class="text-xs font-mono text-indigo-300 truncate flex items-center gap-1.5">
+                                    <i class="fa-regular fa-envelope text-[10px] text-indigo-400"></i>
+                                    ${escapeHtml(account.email)}
+                                </span>
+                                <span class="text-xs font-mono text-emerald-300/90 flex items-center gap-1.5">
+                                    <i class="fa-solid fa-key text-[10px] text-emerald-400"></i>
+                                    ${escapeHtml(account.password)}
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="flex items-center gap-1.5 self-end sm:self-center flex-shrink-0">
+                        <button type="button" data-action="copy-email" data-id="${account.id}" class="px-2.5 py-1.5 rounded-lg bg-slate-900/80 hover:bg-indigo-600/30 text-slate-300 hover:text-indigo-200 border border-white/5 text-xs transition-colors flex items-center gap-1" title="Copy Email Address">
+                            <i class="fa-solid fa-at text-[10px]"></i>
+                            <span>Email</span>
+                        </button>
+                        <button type="button" data-action="copy-pass" data-id="${account.id}" class="px-2.5 py-1.5 rounded-lg bg-slate-900/80 hover:bg-emerald-600/30 text-slate-300 hover:text-emerald-200 border border-white/5 text-xs transition-colors flex items-center gap-1" title="Copy Password">
+                            <i class="fa-solid fa-key text-[10px]"></i>
+                            <span>Pass</span>
+                        </button>
+                        <button type="button" data-action="copy-full" data-id="${account.id}" class="px-2.5 py-1.5 rounded-lg bg-indigo-600/20 hover:bg-indigo-600 text-indigo-200 hover:text-white border border-indigo-500/30 text-xs font-medium transition-colors flex items-center gap-1" title="Copy Complete Formatted Credential Line">
+                            <i class="fa-regular fa-copy text-[11px]"></i>
+                            <span>Full Line</span>
+                        </button>
+                    </div>
+                `;
+                resultsContainer.appendChild(card);
+
+                // Table Row Item
+                const tr = document.createElement('tr');
+                tr.className = 'hover:bg-slate-800/50 transition-colors';
+                tr.innerHTML = `
+                    <td class="py-2.5 px-3 font-mono text-slate-500">${index + 1}</td>
+                    <td class="py-2.5 px-3 font-medium text-slate-200 whitespace-nowrap">${escapeHtml(account.fullName)}</td>
+                    <td class="py-2.5 px-3 font-mono text-indigo-300 whitespace-nowrap">${escapeHtml(account.email)}</td>
+                    <td class="py-2.5 px-3 font-mono text-emerald-300 whitespace-nowrap">${escapeHtml(account.password)}</td>
+                    <td class="py-2.5 px-3 text-right whitespace-nowrap">
+                        <button type="button" data-action="copy-email" data-id="${account.id}" class="text-slate-400 hover:text-indigo-300 px-1.5 py-1" title="Copy Email">
+                            <i class="fa-solid fa-at"></i>
+                        </button>
+                        <button type="button" data-action="copy-full" data-id="${account.id}" class="text-slate-400 hover:text-white px-1.5 py-1" title="Copy Full Credential">
+                            <i class="fa-regular fa-copy"></i>
+                        </button>
+                    </td>
+                `;
+                tableBody.appendChild(tr);
+            });
+
+            if (state.viewMode === 'cards') {
+                resultsContainer.classList.remove('hidden');
+                tableContainer.classList.add('hidden');
+            } else {
+                resultsContainer.classList.add('hidden');
+                tableContainer.classList.remove('hidden');
+            }
+        }
+
+        // Safe Clipboard Helper
+        function copyToClipboard(text, successMessage = 'Copied to clipboard!') {
+            if (navigator.clipboard && window.isSecureContext) {
+                navigator.clipboard.writeText(text).then(() => {
+                    showToast(successMessage, 'success');
+                }).catch(() => fallbackCopy(text, successMessage));
+            } else {
+                fallbackCopy(text, successMessage);
+            }
+        }
+
+        function fallbackCopy(text, successMessage) {
+            const textarea = document.createElement('textarea');
+            textarea.value = text;
+            textarea.style.position = 'fixed';
+            textarea.style.opacity = '0';
+            document.body.appendChild(textarea);
+            textarea.select();
+            try {
+                document.execCommand('copy');
+                showToast(successMessage, 'success');
+            } catch (err) {
+                showToast('Unable to copy automatically.', 'error');
+            }
+            document.body.removeChild(textarea);
+        }
+
+        // Event Delegation for Account Row Buttons
+        function handleAccountActionClick(e) {
+            const btn = e.target.closest('button[data-action]');
+            if (!btn) return;
+            const action = btn.dataset.action;
+            const id = btn.dataset.id;
+            const account = state.accounts.find(a => a.id === id);
+            if (!account) return;
+
+            if (action === 'copy-email') {
+                copyToClipboard(account.email, `Copied ${account.email}`);
+            } else if (action === 'copy-pass') {
+                copyToClipboard(account.password, `Copied password for ${account.username}`);
+            } else if (action === 'copy-full') {
+                copyToClipboard(formatExportLine(account), `Copied full credential for ${account.fullName}`);
+            }
+        }
+
+        resultsContainer.addEventListener('click', handleAccountActionClick);
+        tableBody.addEventListener('click', handleAccountActionClick);
+
+        // Source Mode Tab Switching
+        document.querySelectorAll('.source-tab-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                state.sourceMode = btn.dataset.source;
+                document.querySelectorAll('.source-tab-btn').forEach(b => {
+                    const active = b.dataset.source === state.sourceMode;
+                    b.className = active
+                        ? 'source-tab-btn py-2 px-2.5 rounded-lg text-xs font-medium transition-all bg-indigo-600 text-white shadow'
+                        : 'source-tab-btn py-2 px-2.5 rounded-lg text-xs font-medium transition-all text-slate-400 hover:text-white';
+                });
+
+                if (state.sourceMode === 'custom') {
+                    customNamesGroup.classList.remove('hidden');
+                    countGroup.classList.add('opacity-50', 'pointer-events-none');
+                    countPresets.classList.add('hidden');
+                    engineBadgeText.textContent = 'Custom Bulk List Mode';
+                } else {
+                    customNamesGroup.classList.add('hidden');
+                    countGroup.classList.remove('opacity-50', 'pointer-events-none');
+                    countPresets.classList.remove('hidden');
+                    engineBadgeText.textContent = state.sourceMode === 'api'
+                        ? 'Live API Mode (Auto-Fallback)'
+                        : 'Instant Local Engine Ready';
+                }
+            });
+        });
+
+        // Password Mode Switching
+        document.querySelectorAll('.pass-mode-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                state.passwordMode = btn.dataset.passmode;
+                document.querySelectorAll('.pass-mode-btn').forEach(b => {
+                    const active = b.dataset.passmode === state.passwordMode;
+                    b.className = active
+                        ? 'pass-mode-btn px-2.5 py-1 rounded-md text-[11px] font-medium bg-indigo-600 text-white transition-all'
+                        : 'pass-mode-btn px-2.5 py-1 rounded-md text-[11px] font-medium text-slate-400 hover:text-white transition-all';
+                });
+
+                if (state.passwordMode === 'random') {
+                    fixedPasswordBox.classList.add('hidden');
+                    randomPasswordBox.classList.remove('hidden');
+                } else {
+                    fixedPasswordBox.classList.remove('hidden');
+                    randomPasswordBox.classList.add('hidden');
+                }
+                updateLivePreviews();
+            });
+        });
+
+        // Quick Count Preset Buttons
+        document.querySelectorAll('.count-preset-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                countInput.value = btn.dataset.count;
+                document.querySelectorAll('.count-preset-btn').forEach(b => {
+                    const active = b.dataset.count === countInput.value;
+                    b.className = active
+                        ? 'count-preset-btn px-2.5 py-1 rounded-md text-xs bg-indigo-600/30 text-indigo-300 border border-indigo-500/30 transition-colors'
+                        : 'count-preset-btn px-2.5 py-1 rounded-md text-xs bg-slate-800/80 hover:bg-indigo-600/30 hover:text-indigo-300 border border-white/5 text-slate-300 transition-colors';
+                });
+            });
+        });
+
+        // Roll Fixed Password Button
+        document.getElementById('roll-fixed-pass-btn').addEventListener('click', () => {
+            defaultPasswordInput.value = generateRandomPassword(14);
+            updateLivePreviews();
+            showToast('Generated new shared password!', 'info');
+        });
+
+        // Load Sample Custom Names
+        document.getElementById('load-sample-names-btn').addEventListener('click', () => {
+            customNamesInput.value = [
+                "Sophia Martinez",
+                "Liam O'Connor Jr.",
+                "Dr. Marcus Vance",
+                "Elena Rostova",
+                "Sophia Martinez"
+            ].join('\n');
+            showToast('Loaded 5 sample names (including duplicate to demo auto-deduplication).', 'info');
+        });
+
+        // Toggle Advanced Drawer
+        document.getElementById('toggle-advanced-btn').addEventListener('click', () => {
+            advancedDrawer.classList.toggle('hidden');
+        });
+
+        // Reset Defaults
+        document.getElementById('reset-defaults-btn').addEventListener('click', () => {
+            domainInput.value = 'mydomain.com';
+            countInput.value = '5';
+            emailFormatInput.value = 'standard';
+            defaultPasswordInput.value = 'Reichei191919';
+            mailboxUrlInput.value = 'https://mail.one.com/mail/INBOX/1/2';
+            onboardingNoteInput.value = 'Log in first to the mailbox and secured your chatgpt account by adding 2FA and Password..';
+            searchInput.value = '';
+            state.searchQuery = '';
+            updateLivePreviews();
+            showToast('Reset parameters to default settings.', 'info');
+        });
+
+        // View Mode Toggles
+        const viewCardsBtn = document.getElementById('view-cards-btn');
+        const viewTableBtn = document.getElementById('view-table-btn');
+
+        viewCardsBtn.addEventListener('click', () => {
+            state.viewMode = 'cards';
+            viewCardsBtn.className = 'px-2.5 py-1 rounded-md text-xs font-medium bg-indigo-600 text-white transition-all';
+            viewTableBtn.className = 'px-2.5 py-1 rounded-md text-xs font-medium text-slate-400 hover:text-white transition-all';
+            renderWorkspace();
+        });
+
+        viewTableBtn.addEventListener('click', () => {
+            state.viewMode = 'table';
+            viewTableBtn.className = 'px-2.5 py-1 rounded-md text-xs font-medium bg-indigo-600 text-white transition-all';
+            viewCardsBtn.className = 'px-2.5 py-1 rounded-md text-xs font-medium text-slate-400 hover:text-white transition-all';
+            renderWorkspace();
+        });
+
+        // Live Input Listeners
+        domainInput.addEventListener('input', updateLivePreviews);
+        emailFormatInput.addEventListener('change', updateLivePreviews);
+        defaultPasswordInput.addEventListener('input', updateLivePreviews);
+        mailboxUrlInput.addEventListener('input', updateLivePreviews);
+        passLengthInput.addEventListener('input', () => {
+            passLenLabel.textContent = passLengthInput.value;
+            updateLivePreviews();
+        });
+        searchInput.addEventListener('input', () => {
+            state.searchQuery = searchInput.value;
+            renderWorkspace();
+        });
+
+        // Form Submission
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const targetDomain = sanitizeDomain(domainInput.value);
+            domainInput.value = targetDomain;
+            const count = Math.min(100, Math.max(1, parseInt(countInput.value, 10) || 5));
+            countInput.value = String(count);
+            const emailFormat = emailFormatInput.value;
+
+            emptyState.classList.add('hidden');
+            resultsContainer.classList.add('hidden');
+            tableContainer.classList.add('hidden');
+            loader.classList.remove('hidden');
+            loader.classList.add('flex');
+            generateBtn.disabled = true;
+
+            const rawNames = await getRawNames(count);
+
+            loader.classList.add('hidden');
+            loader.classList.remove('flex');
+            generateBtn.disabled = false;
+
+            if (rawNames && rawNames.length > 0) {
+                state.accounts = processBatchIdentities(rawNames, targetDomain, emailFormat);
+                renderWorkspace();
+                showToast(`Generated ${state.accounts.length} unique credentials!`, 'success');
+            } else {
+                renderWorkspace();
+            }
+        });
+
+        // Copy All Formatted Lines
+        document.getElementById('copy-all-btn').addEventListener('click', () => {
+            if (state.accounts.length === 0) return;
+            const allText = state.accounts.map(formatExportLine).join('\n');
+            copyToClipboard(allText, `Copied all ${state.accounts.length} formatted credential lines!`);
+        });
+
+        // Copy Emails Only
+        document.getElementById('copy-emails-only-btn').addEventListener('click', () => {
+            if (state.accounts.length === 0) return;
+            const emails = state.accounts.map(a => a.email).join('\n');
+            copyToClipboard(emails, `Copied ${state.accounts.length} email addresses!`);
+        });
+
+        // Download .TXT File
+        document.getElementById('download-txt-btn').addEventListener('click', () => {
+            if (state.accounts.length === 0) return;
+            const formattedText = state.accounts.map(formatExportLine).join('\n');
+            const blob = new Blob([formattedText], { type: 'text/plain;charset=utf-8' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `GenAccounts_${sanitizeDomain(domainInput.value)}_${Date.now()}.txt`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            showToast('Downloaded .TXT credentials file!', 'success');
+        });
+
+        // Download .CSV File
+        document.getElementById('download-csv-btn').addEventListener('click', () => {
+            if (state.accounts.length === 0) return;
+            const mailbox = mailboxUrlInput.value.trim();
+            const note = onboardingNoteInput.value.trim();
+            const header = ['Full Name', 'Username', 'Email', 'Password', 'Mailbox URL', 'Onboarding Note'];
+            const rows = state.accounts.map(a => [
+                a.fullName,
+                a.username,
+                a.email,
+                a.password,
+                mailbox,
+                note
+            ].map(cell => `"${String(cell).replace(/"/g, '""')}"`).join(','));
+
+            const csvContent = [header.join(','), ...rows].join('\n');
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `GenAccounts_${sanitizeDomain(domainInput.value)}_${Date.now()}.csv`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            showToast('Downloaded .CSV spreadsheet file!', 'success');
+        });
+
+        // Clear All
+        document.getElementById('clear-all-btn').addEventListener('click', () => {
+            state.accounts = [];
+            state.searchQuery = '';
+            searchInput.value = '';
+            renderWorkspace();
+            showToast('Cleared workspace.', 'info');
+        });
+
+        // Initial Boot: Generate an initial sample batch so the UI is immediately interactive
+        window.addEventListener('DOMContentLoaded', () => {
+            const initialNames = generateLocalNames(5);
+            state.accounts = processBatchIdentities(initialNames, sanitizeDomain(domainInput.value), emailFormatInput.value);
+            renderWorkspace();
+        });
+    </script>
+</body>
+</html>
