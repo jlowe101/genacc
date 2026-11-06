@@ -286,8 +286,8 @@
                         </div>
 
                         <div>
-                            <label for="mailbox-url" class="block text-[11px] font-medium text-slate-400 mb-1">Mailbox Login URL</label>
-                            <input type="url" id="mailbox-url" value="https://mail.one.com/mail/INBOX/1/2"
+                            <label for="mailbox-url" class="block text-[11px] font-medium text-slate-400 mb-1">2FA Value</label>
+                            <input type="text" id="mailbox-url" value="-"
                                 class="w-full px-3 py-1.5 bg-slate-950 border border-slate-700 rounded-lg text-xs text-white font-mono focus:outline-none focus:ring-1 focus:ring-indigo-500">
                         </div>
 
@@ -421,7 +421,7 @@
                 <!-- Footer Format Preview Bar -->
                 <div id="export-preview-bar" class="mt-4 pt-3 border-t border-white/10 flex items-center justify-between gap-2 text-[11px] text-slate-400">
                     <div class="truncate font-mono" id="export-format-sample">
-                        Format: Email: user@mydomain.com | Pass: Reichei191919 | 2FA: 
+                        Format: Email: user@mydomain.com | Pass: Reichei191919 | 2FA: -
                     </div>
                     <span class="flex-shrink-0 text-emerald-400 flex items-center gap-1">
                         <i class="fa-solid fa-circle-check"></i> Ready
@@ -724,9 +724,9 @@
 
         // Format Single Account Line for Export / Full Copy
         function formatExportLine(account) {
-            const mailbox = mailboxUrlInput.value.trim() || 'https://mail.one.com/mail/INBOX/1/2';
+            const twoFa = mailboxUrlInput.value.trim() || '-';
             const note = onboardingNoteInput.value.trim() || 'Log in to the chatgpt and secured your account by changing 2FA..';
-            return `Email: ${account.email}  | Pass: ${account.password} | Mailbox: ${mailbox} | ${note}`;
+            return `Email: ${account.email}  | Pass: ${account.password} | 2FA: ${twoFa} | ${note}`;
         }
 
         // Update Live Previews & KPI Header
@@ -743,8 +743,8 @@
                 : 'Fixed Default';
 
             const samplePass = state.passwordMode === 'random' ? '••••••••••••' : (defaultPasswordInput.value.trim() || 'Reichei191919');
-            const mailbox = mailboxUrlInput.value.trim() || 'https://mail.one.com/mail/INBOX/1/2';
-            exportFormatSample.textContent = `Format: Email: ${samplePrefix}@${domain} | Pass: ${samplePass} | Mailbox: ${mailbox}`;
+            const twoFa = mailboxUrlInput.value.trim() || '-';
+            exportFormatSample.textContent = `Format: Email: ${samplePrefix}@${domain} | Pass: ${samplePass} | 2FA: ${twoFa}`;
         }
 
         // Render Accounts into Active View
@@ -1008,7 +1008,7 @@
             countInput.value = '5';
             emailFormatInput.value = 'standard';
             defaultPasswordInput.value = 'Reichei191919';
-            mailboxUrlInput.value = '2FA: ';
+            mailboxUrlInput.value = '-';
             onboardingNoteInput.value = 'Log in to the chatgpt and secured your account by changing 2FA..';
             searchInput.value = '';
             state.searchQuery = '';
@@ -1113,15 +1113,15 @@
         // Download .CSV File
         document.getElementById('download-csv-btn').addEventListener('click', () => {
             if (state.accounts.length === 0) return;
-            const mailbox = mailboxUrlInput.value.trim();
+            const twoFa = mailboxUrlInput.value.trim() || '-';
             const note = onboardingNoteInput.value.trim();
-            const header = ['Full Name', 'Username', 'Email', 'Password', 'Mailbox URL', 'Onboarding Note'];
+            const header = ['Full Name', 'Username', 'Email', 'Password', '2FA', 'Onboarding Note'];
             const rows = state.accounts.map(a => [
                 a.fullName,
                 a.username,
                 a.email,
                 a.password,
-                mailbox,
+                twoFa,
                 note
             ].map(cell => `"${String(cell).replace(/"/g, '""')}"`).join(','));
 
