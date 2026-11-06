@@ -293,7 +293,7 @@
 
                         <div>
                             <label for="onboarding-note" class="block text-[11px] font-medium text-slate-400 mb-1">Onboarding Instructions Note</label>
-                            <input type="text" id="onboarding-note" value="Log in first to the mailbox and secured your chatgpt account by adding 2FA and Password.."
+                            <input type="text" id="onboarding-note" value="Log in to the chatgpt and secured your account by changing 2FA.."
                                 class="w-full px-3 py-1.5 bg-slate-950 border border-slate-700 rounded-lg text-xs text-white focus:outline-none focus:ring-1 focus:ring-indigo-500">
                         </div>
 
@@ -421,7 +421,7 @@
                 <!-- Footer Format Preview Bar -->
                 <div id="export-preview-bar" class="mt-4 pt-3 border-t border-white/10 flex items-center justify-between gap-2 text-[11px] text-slate-400">
                     <div class="truncate font-mono" id="export-format-sample">
-                        Format: Email: user@mydomain.com | Pass: Reichei191919 | Mailbox: https://mail.one.com/mail/INBOX/1/2
+                        Format: Email: user@mydomain.com | Pass: Reichei191919 | 2FA: 
                     </div>
                     <span class="flex-shrink-0 text-emerald-400 flex items-center gap-1">
                         <i class="fa-solid fa-circle-check"></i> Ready
@@ -725,7 +725,7 @@
         // Format Single Account Line for Export / Full Copy
         function formatExportLine(account) {
             const mailbox = mailboxUrlInput.value.trim() || 'https://mail.one.com/mail/INBOX/1/2';
-            const note = onboardingNoteInput.value.trim() || 'Log in first to the mailbox and secured your chatgpt account by adding 2FA and Password..';
+            const note = onboardingNoteInput.value.trim() || 'Log in to the chatgpt and secured your account by changing 2FA..';
             return `Email: ${account.email}  | Pass: ${account.password} | Mailbox: ${mailbox} | ${note}`;
         }
 
@@ -1008,8 +1008,8 @@
             countInput.value = '5';
             emailFormatInput.value = 'standard';
             defaultPasswordInput.value = 'Reichei191919';
-            mailboxUrlInput.value = 'https://mail.one.com/mail/INBOX/1/2';
-            onboardingNoteInput.value = 'Log in first to the mailbox and secured your chatgpt account by adding 2FA and Password..';
+            mailboxUrlInput.value = '2FA: ';
+            onboardingNoteInput.value = 'Log in to the chatgpt and secured your account by changing 2FA..';
             searchInput.value = '';
             state.searchQuery = '';
             updateLivePreviews();
